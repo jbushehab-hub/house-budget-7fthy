@@ -14,7 +14,7 @@ const _m={name:"House Budget Tracker",short_name:"HouseTracker",start_url:"./",d
         {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230F1923'/%3E%3Ctext y='420' x='20' font-size='440'%3E%F0%9F%8F%A1%3C/text%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml"}]};
 const _mb=new Blob([JSON.stringify(_m)],{type:"application/json"});
 const _ml=document.createElement("link");_ml.rel="manifest";_ml.href=URL.createObjectURL(_mb);document.head.appendChild(_ml);
-</script><link rel="manifest" href="blob:null/f83c2a50-9559-40b7-b9b7-b4545646af7e"><link rel="manifest" href="blob:https://jbushehab-hub.github.io/ad6ef73e-5757-4be8-814e-975bd9d3ec2b"><link rel="manifest" href="blob:null/fd695ae9-75b7-4b8c-929c-3691a55578b1">
+</script><link rel="manifest" href="blob:null/7ce81121-6dd3-423a-bcb5-2af5f0a22c6e"><link rel="manifest" href="blob:https://jbushehab-hub.github.io/ad6ef73e-5757-4be8-814e-975bd9d3ec2b"><link rel="manifest" href="blob:null/fd695ae9-75b7-4b8c-929c-3691a55578b1">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&amp;family=Nunito+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
 <style>
 /* ── CSS Variables: Dark & Light Mode ── */
@@ -6819,7 +6819,7 @@ ReactDOM.createRoot(document.getElementById("screen")).render( /*#__PURE__*/Reac
           <div style="font-size:16px;font-weight:900;color:#ECF0F1;font-family:Nunito,sans-serif;margin-bottom:6px;">Publishing to GitHub Pages…</div>
           <div style="font-size:12px;color:#7F8C8D;line-height:1.6;" id="sb-loading-msg">Creating repo &amp; uploading your app. Takes ~20 seconds.</div>
           <div style="margin:20px auto 0;width:200px;height:5px;background:#243447;border-radius:99px;overflow:hidden;">
-            <div id="sb-progress-bar" style="height: 100%; width: 23.5005%; background: linear-gradient(90deg, rgb(0, 199, 183), rgb(0, 173, 159)); border-radius: 99px; transition: width 0.4s;"></div>
+            <div id="sb-progress-bar" style="height: 100%; width: 18.2979%; background: linear-gradient(90deg, rgb(0, 199, 183), rgb(0, 173, 159)); border-radius: 99px; transition: width 0.4s;"></div>
           </div>
         </div>
       </div>
@@ -8638,9 +8638,9 @@ document.addEventListener("keydown", e => {
   }
   function saveProfiles(list){
     try{localStorage.setItem("hbt_profiles",JSON.stringify(list));}catch(e){}
-    /* Push stripped profile list (no pinHash) to Firebase so other devices can see them */
+    /* Push full profile list including pinHash to Firebase so PINs sync across devices */
     try{
-      const stripped=list.map(p=>({id:p.id,name:p.name,avatar:p.avatar,color:p.color,hasPin:p.hasPin}));
+      const stripped=list.map(p=>({id:p.id,name:p.name,avatar:p.avatar,color:p.color,hasPin:p.hasPin,pinHash:p.pinHash||""}));
       fetch(_PROF_URL,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(stripped)}).catch(()=>{});
     }catch(e){}
   }
@@ -8660,10 +8660,16 @@ document.addEventListener("keydown", e => {
       }
       const local=getProfiles();
       let changed=false;
-      /* Add remote profiles not in local */
+      /* Add remote profiles not in local, update pinHash for existing ones */
       remote.forEach(rp=>{
-        if(!local.find(lp=>lp.id===rp.id)){
-          local.push({id:rp.id,name:rp.name,avatar:rp.avatar||"👤",color:rp.color||"#F0A500",hasPin:rp.hasPin||false,pinHash:""});
+        const existing=local.find(lp=>lp.id===rp.id);
+        if(!existing){
+          local.push({id:rp.id,name:rp.name,avatar:rp.avatar||"👤",color:rp.color||"#F0A500",hasPin:rp.hasPin||false,pinHash:rp.pinHash||""});
+          changed=true;
+        } else if(rp.pinHash && rp.pinHash!==existing.pinHash){
+          /* Update pinHash from remote if it changed on another device */
+          existing.pinHash=rp.pinHash;
+          existing.hasPin=rp.hasPin||false;
           changed=true;
         }
       });
@@ -8672,7 +8678,7 @@ document.addEventListener("keydown", e => {
       const newRemoteIds=remote.map(r=>r.id);
       const toAdd=local.filter(lp=>!newRemoteIds.includes(lp.id));
       if(toAdd.length>0){
-        const merged=[...remote,...toAdd.map(p=>({id:p.id,name:p.name,avatar:p.avatar,color:p.color,hasPin:p.hasPin}))];
+        const merged=[...remote,...toAdd.map(p=>({id:p.id,name:p.name,avatar:p.avatar,color:p.color,hasPin:p.hasPin,pinHash:p.pinHash||""}))];
         fetch(_PROF_URL,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(merged)}).catch(()=>{});
       }
     }catch(e){}
@@ -8705,9 +8711,14 @@ document.addEventListener("keydown", e => {
   let _pinTarget=null; /* {mode:"verify"|"set", profileId, resolve} */
 
   /* ── render helpers ── */
-  async function renderProfileList(){
-    /* Always sync profiles from Firebase before rendering */
-    await _fetchAndMergeProfilesFromCloud();
+  function renderProfileList(){
+    /* Render immediately from local storage — don't wait for network */
+    _renderProfileListUI();
+    /* Sync from Firebase in background, then re-render if anything changed */
+    _fetchAndMergeProfilesFromCloud().then(()=>_renderProfileListUI()).catch(()=>{});
+  }
+
+  function _renderProfileListUI(){
     const profiles=getProfiles();
     let html=`<div class="pg-card">`;
     if(profiles.length){
@@ -9175,17 +9186,7 @@ document.addEventListener("keydown", e => {
   }
 
   /* ── Boot ── */
-  async function _boot(){
-    /* Always fetch from Firebase and merge first */
-    await _fetchAndMergeProfilesFromCloud();
-    /* Then push local profiles up to Firebase (so other devices see them) */
-    const localProfs = getProfiles();
-    if(localProfs.length > 0){
-      try{
-        const stripped=localProfs.map(p=>({id:p.id,name:p.name,avatar:p.avatar,color:p.color,hasPin:p.hasPin}));
-        fetch(_PROF_URL,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(stripped)}).catch(()=>{});
-      }catch(e){}
-    }
+  function _boot(){
     const autoProfile=localStorage.getItem(SEL_KEY);
     if(autoProfile){
       const profiles=getProfiles();
@@ -9210,6 +9211,14 @@ document.addEventListener("keydown", e => {
       }
     } else {
       renderProfileList();
+    }
+    /* Push local profiles to Firebase in background so other devices can see them */
+    const localProfs=getProfiles();
+    if(localProfs.length>0){
+      try{
+        const stripped=localProfs.map(p=>({id:p.id,name:p.name,avatar:p.avatar,color:p.color,hasPin:p.hasPin,pinHash:p.pinHash||""}));
+        fetch(_PROF_URL,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(stripped)}).catch(()=>{});
+      }catch(e){}
     }
   }
   _boot();
