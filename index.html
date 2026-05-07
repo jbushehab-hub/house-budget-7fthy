@@ -14,7 +14,7 @@ const _m={name:"House Budget Tracker",short_name:"HouseTracker",start_url:"./",d
         {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230F1923'/%3E%3Ctext y='420' x='20' font-size='440'%3E%F0%9F%8F%A1%3C/text%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml"}]};
 const _mb=new Blob([JSON.stringify(_m)],{type:"application/json"});
 const _ml=document.createElement("link");_ml.rel="manifest";_ml.href=URL.createObjectURL(_mb);document.head.appendChild(_ml);
-</script><link rel="manifest" href="blob:null/d98840da-6be7-4fa7-acfc-339eadfe5244"><link rel="manifest" href="blob:https://jbushehab-hub.github.io/ad6ef73e-5757-4be8-814e-975bd9d3ec2b"><link rel="manifest" href="blob:null/fd695ae9-75b7-4b8c-929c-3691a55578b1">
+</script><link rel="manifest" href="blob:null/011bd9ae-db50-40be-aa5f-0385c7e65287"><link rel="manifest" href="blob:https://jbushehab-hub.github.io/ad6ef73e-5757-4be8-814e-975bd9d3ec2b"><link rel="manifest" href="blob:null/fd695ae9-75b7-4b8c-929c-3691a55578b1">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&amp;family=Nunito+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
 <style>
 /* ── CSS Variables: Dark & Light Mode ── */
@@ -6540,6 +6540,9 @@ ReactDOM.createRoot(document.getElementById("screen")).render( /*#__PURE__*/Reac
         <button onclick="pg_pickColor(0)" id="pgc_0" style="width: 28px; height: 28px; border-radius: 50%; background: rgb(240, 165, 0); border: 3px solid rgb(255, 255, 255); cursor: pointer; transition: border-color 0.15s;"></button><button onclick="pg_pickColor(1)" id="pgc_1" style="width:28px;height:28px;border-radius:50%;background:#2ECC71;border:3px solid transparent;cursor:pointer;transition:border-color .15s;"></button><button onclick="pg_pickColor(2)" id="pgc_2" style="width:28px;height:28px;border-radius:50%;background:#3498DB;border:3px solid transparent;cursor:pointer;transition:border-color .15s;"></button><button onclick="pg_pickColor(3)" id="pgc_3" style="width:28px;height:28px;border-radius:50%;background:#E74C3C;border:3px solid transparent;cursor:pointer;transition:border-color .15s;"></button><button onclick="pg_pickColor(4)" id="pgc_4" style="width:28px;height:28px;border-radius:50%;background:#9B59B6;border:3px solid transparent;cursor:pointer;transition:border-color .15s;"></button><button onclick="pg_pickColor(5)" id="pgc_5" style="width:28px;height:28px;border-radius:50%;background:#1ABC9C;border:3px solid transparent;cursor:pointer;transition:border-color .15s;"></button><button onclick="pg_pickColor(6)" id="pgc_6" style="width:28px;height:28px;border-radius:50%;background:#E67E22;border:3px solid transparent;cursor:pointer;transition:border-color .15s;"></button><button onclick="pg_pickColor(7)" id="pgc_7" style="width:28px;height:28px;border-radius:50%;background:#F39C12;border:3px solid transparent;cursor:pointer;transition:border-color .15s;"></button>
       </div>
       <button class="pg-btn pg-btn-primary" onclick="pg_createProfile()">Create Profile</button>
+    </div>
+    <div style="text-align:center;padding:8px 0 4px;">
+      <button onclick="window._forceRefreshProfiles()" style="background:none;border:none;font-size:11px;color:var(--mu);cursor:pointer;text-decoration:underline;">🔄 Refresh profiles from cloud</button>
     </div></div>
   <div style="width:100%;max-width:400px;margin-top:8px;display:flex;gap:8px;">
     <button onclick="openShare()" style="flex:1;background:var(--cardH);border:1px solid var(--bo);border-radius:16px;padding:13px;font-size:13px;font-weight:800;color:var(--mu);cursor:pointer;font-family:'Nunito Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;">
@@ -6811,7 +6814,7 @@ ReactDOM.createRoot(document.getElementById("screen")).render( /*#__PURE__*/Reac
           <div style="font-size:16px;font-weight:900;color:#ECF0F1;font-family:Nunito,sans-serif;margin-bottom:6px;">Publishing to GitHub Pages…</div>
           <div style="font-size:12px;color:#7F8C8D;line-height:1.6;" id="sb-loading-msg">Creating repo &amp; uploading your app. Takes ~20 seconds.</div>
           <div style="margin:20px auto 0;width:200px;height:5px;background:#243447;border-radius:99px;overflow:hidden;">
-            <div id="sb-progress-bar" style="height: 100%; width: 15.1064%; background: linear-gradient(90deg, rgb(0, 199, 183), rgb(0, 173, 159)); border-radius: 99px; transition: width 0.4s;"></div>
+            <div id="sb-progress-bar" style="height: 100%; width: 22.5127%; background: linear-gradient(90deg, rgb(0, 199, 183), rgb(0, 173, 159)); border-radius: 99px; transition: width 0.4s;"></div>
           </div>
         </div>
       </div>
@@ -8621,9 +8624,19 @@ document.addEventListener("keydown", e => {
   }
 
   /* ── Profile Firebase sync — Firebase is the ONLY store ── */
-  const _PROF_DB="https://house-budget-c64c1-default-rtdb.asia-southeast1.firebasedatabase.app";
-  const _PROF_ROOM="Jassim2026";
-  const _PROF_URL=_PROF_DB+"/rooms/"+_PROF_ROOM+"/profiles.json";
+  const _PROF_DEFAULT_DB="https://house-budget-c64c1-default-rtdb.asia-southeast1.firebasedatabase.app";
+  const _PROF_DEFAULT_ROOM="Jassim2026";
+
+  function _getProfUrl(){
+    try{
+      const cfg=JSON.parse(localStorage.getItem("hbt_sync_cfg")||"null");
+      const db=(cfg&&cfg.dbUrl)||_PROF_DEFAULT_DB;
+      const room=(cfg&&cfg.room)||_PROF_DEFAULT_ROOM;
+      return db.replace(/\/+$/,"")+"/rooms/"+room+"/profiles.json";
+    }catch(e){
+      return _PROF_DEFAULT_DB+"/rooms/"+_PROF_DEFAULT_ROOM+"/profiles.json";
+    }
+  }
 
   /* In-memory cache only — never trust localStorage for profiles */
   let _profilesCache=[];
@@ -8633,20 +8646,20 @@ document.addEventListener("keydown", e => {
   async function saveProfiles(list){
     _profilesCache=list;
     try{
-      await fetch(_PROF_URL,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(list)});
+      await fetch(_getProfUrl(),{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(list)});
     }catch(e){}
   }
 
   function _pushProfilesToFirebase(list){
     _profilesCache=list;
     try{
-      fetch(_PROF_URL,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(list)}).catch(()=>{});
+      fetch(_getProfUrl(),{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(list)}).catch(()=>{});
     }catch(e){}
   }
 
   async function _loadProfilesFromFirebase(){
     try{
-      const res=await fetch(_PROF_URL+"?t="+Date.now());
+      const res=await fetch(_getProfUrl()+"?t="+Date.now());
       if(res.ok){
         const data=await res.json();
         if(Array.isArray(data)) _profilesCache=data;
@@ -8690,6 +8703,12 @@ document.addEventListener("keydown", e => {
   let _pinTarget=null; /* {mode:"verify"|"set", profileId, resolve} */
 
   /* ── render helpers ── */
+  window._forceRefreshProfiles=async function(){
+    content.innerHTML=`<div style="text-align:center;padding:60px 20px;"><div style="font-size:36px;margin-bottom:16px;">🔄</div><div style="font-size:14px;font-weight:700;color:var(--tx);">Refreshing…</div></div>`;
+    await _loadProfilesFromFirebase();
+    _renderProfileListUI();
+  };
+
   function renderProfileList(){
     /* Render immediately from local storage — don't wait for network */
     _renderProfileListUI();
@@ -8724,6 +8743,9 @@ document.addEventListener("keydown", e => {
         ${COLORS.map((c,i)=>`<button onclick="pg_pickColor(${i})" id="pgc_${i}" style="width:28px;height:28px;border-radius:50%;background:${c};border:3px solid transparent;cursor:pointer;transition:border-color .15s;"></button>`).join("")}
       </div>
       <button class="pg-btn pg-btn-primary" onclick="pg_createProfile()">Create Profile</button>
+    </div>
+    <div style="text-align:center;padding:8px 0 4px;">
+      <button onclick="window._forceRefreshProfiles()" style="background:none;border:none;font-size:11px;color:var(--mu);cursor:pointer;text-decoration:underline;">🔄 Refresh profiles from cloud</button>
     </div>`;
     content.innerHTML=html;
     pg_pickAvatar(0);
@@ -9213,7 +9235,7 @@ document.addEventListener("keydown", e => {
     content.innerHTML=`<div style="text-align:center;padding:60px 20px;">
       <div style="font-size:36px;margin-bottom:16px;">🏠</div>
       <div style="font-size:14px;font-weight:700;color:var(--tx);margin-bottom:8px;">Loading profiles…</div>
-      <div style="font-size:12px;color:var(--mu);">Connecting to Firebase</div>
+      <div style="font-size:12px;color:var(--mu);">Fetching from: ${_getProfUrl().replace("https://","").split("/")[0]}</div>
     </div>`;
 
     _loadProfilesFromFirebase().then(()=>{
