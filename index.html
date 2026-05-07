@@ -14,7 +14,7 @@ const _m={name:"House Budget Tracker",short_name:"HouseTracker",start_url:"./",d
         {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230F1923'/%3E%3Ctext y='420' x='20' font-size='440'%3E%F0%9F%8F%A1%3C/text%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml"}]};
 const _mb=new Blob([JSON.stringify(_m)],{type:"application/json"});
 const _ml=document.createElement("link");_ml.rel="manifest";_ml.href=URL.createObjectURL(_mb);document.head.appendChild(_ml);
-</script><link rel="manifest" href="blob:null/da2598fc-830e-4f19-995e-117b62635f98"><link rel="manifest" href="blob:https://jbushehab-hub.github.io/ad6ef73e-5757-4be8-814e-975bd9d3ec2b"><link rel="manifest" href="blob:null/fd695ae9-75b7-4b8c-929c-3691a55578b1">
+</script><link rel="manifest" href="blob:null/5abd609e-533f-40a2-a4d9-ffe6a9c50e9d"><link rel="manifest" href="blob:https://jbushehab-hub.github.io/ad6ef73e-5757-4be8-814e-975bd9d3ec2b"><link rel="manifest" href="blob:null/fd695ae9-75b7-4b8c-929c-3691a55578b1">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&amp;family=Nunito+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
 <style>
 /* ── CSS Variables: Dark & Light Mode ── */
@@ -6525,6 +6525,10 @@ ReactDOM.createRoot(document.getElementById("screen")).render( /*#__PURE__*/Reac
           <div class="pg-avatar" style="background:#F0A50022;">👨</div>
           <div class="pg-name">Jassim BuShehab</div>
           <div class="pg-arrow">›</div>
+        </div><div class="pg-profile-row" onclick="pg_selectProfile('p1778156654861')">
+          <div class="pg-avatar" style="background:#F0A50022;">👩</div>
+          <div class="pg-name">aua</div>
+          <div class="pg-arrow">›</div>
         </div></div>
     <div class="pg-card">
       <div class="pg-section">New Profile</div>
@@ -6792,7 +6796,7 @@ ReactDOM.createRoot(document.getElementById("screen")).render( /*#__PURE__*/Reac
             <div style="font-size:13px;font-weight:800;color:#ECF0F1;">Paste your token below</div>
           </div>
           <div style="font-size:10px;font-weight:700;color:#7F8C8D;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">GitHub Personal Access Token</div>
-          <input id="inp-netlify-token" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="width:100%;background:#0F1923;border:1px solid #243447;border-radius:10px;padding:11px 14px;color:#ECF0F1;font-size:13px;font-family:'Nunito Sans',sans-serif;outline:none;margin-bottom:4px;">
+          <input id="inp-netlify-token" type="text" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="width:100%;background:#0F1923;border:1px solid #243447;border-radius:10px;padding:11px 14px;color:#ECF0F1;font-size:13px;font-family:'Nunito Sans',sans-serif;outline:none;margin-bottom:4px;">
           <div style="font-size:10px;color:#7F8C8D;">Saved locally — only sent to GitHub's API to publish your app.</div>
         </div>
 
@@ -6807,7 +6811,7 @@ ReactDOM.createRoot(document.getElementById("screen")).render( /*#__PURE__*/Reac
           <div style="font-size:16px;font-weight:900;color:#ECF0F1;font-family:Nunito,sans-serif;margin-bottom:6px;">Publishing to GitHub Pages…</div>
           <div style="font-size:12px;color:#7F8C8D;line-height:1.6;" id="sb-loading-msg">Creating repo &amp; uploading your app. Takes ~20 seconds.</div>
           <div style="margin:20px auto 0;width:200px;height:5px;background:#243447;border-radius:99px;overflow:hidden;">
-            <div id="sb-progress-bar" style="height: 100%; width: 17.8723%; background: linear-gradient(90deg, rgb(0, 199, 183), rgb(0, 173, 159)); border-radius: 99px; transition: width 0.4s;"></div>
+            <div id="sb-progress-bar" style="height: 100%; width: 20%; background: linear-gradient(90deg, rgb(0, 199, 183), rgb(0, 173, 159)); border-radius: 99px; transition: width 0.4s;"></div>
           </div>
         </div>
       </div>
@@ -9108,9 +9112,15 @@ document.addEventListener("keydown", e => {
 
   /* ── Boot ── */
   async function _boot(){
-    /* If no local profiles, try to pull from Firebase first */
-    if(getProfiles().length===0){
-      await _fetchAndMergeProfilesFromCloud();
+    /* Always fetch from Firebase and merge first */
+    await _fetchAndMergeProfilesFromCloud();
+    /* Then push local profiles up to Firebase (so other devices see them) */
+    const localProfs = getProfiles();
+    if(localProfs.length > 0){
+      try{
+        const stripped=localProfs.map(p=>({id:p.id,name:p.name,avatar:p.avatar,color:p.color,hasPin:p.hasPin}));
+        fetch(_PROF_URL,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(stripped)}).catch(()=>{});
+      }catch(e){}
     }
     const autoProfile=localStorage.getItem(SEL_KEY);
     if(autoProfile){
