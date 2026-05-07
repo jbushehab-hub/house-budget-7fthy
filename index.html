@@ -14,7 +14,7 @@ const _m={name:"House Budget Tracker",short_name:"HouseTracker",start_url:"./",d
         {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230F1923'/%3E%3Ctext y='420' x='20' font-size='440'%3E%F0%9F%8F%A1%3C/text%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml"}]};
 const _mb=new Blob([JSON.stringify(_m)],{type:"application/json"});
 const _ml=document.createElement("link");_ml.rel="manifest";_ml.href=URL.createObjectURL(_mb);document.head.appendChild(_ml);
-</script><link rel="manifest" href="blob:null/b71222c9-a8d0-459b-a0ec-f523a6e62d4e"><link rel="manifest" href="blob:https://jbushehab-hub.github.io/ad6ef73e-5757-4be8-814e-975bd9d3ec2b"><link rel="manifest" href="blob:null/fd695ae9-75b7-4b8c-929c-3691a55578b1">
+</script><link rel="manifest" href="blob:null/f83c2a50-9559-40b7-b9b7-b4545646af7e"><link rel="manifest" href="blob:https://jbushehab-hub.github.io/ad6ef73e-5757-4be8-814e-975bd9d3ec2b"><link rel="manifest" href="blob:null/fd695ae9-75b7-4b8c-929c-3691a55578b1">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&amp;family=Nunito+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
 <style>
 /* ── CSS Variables: Dark & Light Mode ── */
@@ -6533,6 +6533,10 @@ ReactDOM.createRoot(document.getElementById("screen")).render( /*#__PURE__*/Reac
           <div class="pg-avatar" style="background:#F0A50022;">👨</div>
           <div class="pg-name">Jassim BuShehab</div>
           <div class="pg-arrow">›</div>
+        </div><div class="pg-profile-row" onclick="pg_selectProfile('p1777839984882')">
+          <div class="pg-avatar" style="background:#F0A50022;">👤</div>
+          <div class="pg-name">Jassim</div>
+          <div class="pg-arrow">›</div>
         </div></div>
     <div class="pg-card">
       <div class="pg-section">New Profile</div>
@@ -6815,7 +6819,7 @@ ReactDOM.createRoot(document.getElementById("screen")).render( /*#__PURE__*/Reac
           <div style="font-size:16px;font-weight:900;color:#ECF0F1;font-family:Nunito,sans-serif;margin-bottom:6px;">Publishing to GitHub Pages…</div>
           <div style="font-size:12px;color:#7F8C8D;line-height:1.6;" id="sb-loading-msg">Creating repo &amp; uploading your app. Takes ~20 seconds.</div>
           <div style="margin:20px auto 0;width:200px;height:5px;background:#243447;border-radius:99px;overflow:hidden;">
-            <div id="sb-progress-bar" style="height: 100%; width: 24.7416%; background: linear-gradient(90deg, rgb(0, 199, 183), rgb(0, 173, 159)); border-radius: 99px; transition: width 0.4s;"></div>
+            <div id="sb-progress-bar" style="height: 100%; width: 23.5005%; background: linear-gradient(90deg, rgb(0, 199, 183), rgb(0, 173, 159)); border-radius: 99px; transition: width 0.4s;"></div>
           </div>
         </div>
       </div>
@@ -8659,7 +8663,7 @@ document.addEventListener("keydown", e => {
       /* Add remote profiles not in local */
       remote.forEach(rp=>{
         if(!local.find(lp=>lp.id===rp.id)){
-          local.push({id:rp.id,name:rp.name,avatar:rp.avatar||"👤",color:rp.color||"#F0A500",hasPin:false,pinHash:""});
+          local.push({id:rp.id,name:rp.name,avatar:rp.avatar||"👤",color:rp.color||"#F0A500",hasPin:rp.hasPin||false,pinHash:""});
           changed=true;
         }
       });
@@ -8767,15 +8771,19 @@ document.addEventListener("keydown", e => {
     </div>`;
   };
 
-  function renderSetPin(profileId,required){
+  function renderSetPin(profileId,required,isNewDevice){
     const profiles=getProfiles();
     const profile=profiles.find(p=>p.id===profileId);
     _pinBuffer="";
+    const subtitle = isNewDevice
+      ? "⚠️ Set a PIN for this device to unlock"
+      : required ? "Enter PIN to unlock" : "Set a PIN for this profile (optional)";
+    _pinTarget={mode: (required && !isNewDevice) ? "verify" : "set", profileId};
     content.innerHTML=`
       <div class="pg-card" style="text-align:center;">
         <div style="font-size:36px;margin-bottom:4px;">${profile?.avatar||"👤"}</div>
         <div style="font-size:16px;font-weight:800;color:var(--tx);margin-bottom:4px;">${profile?.name||""}</div>
-        <div style="font-size:12px;color:var(--mu);margin-bottom:18px;">${required?"Enter PIN to unlock":"Set a PIN for this profile (optional)"}</div>
+        <div style="font-size:12px;color:var(--mu);margin-bottom:18px;">${subtitle}</div>
         <div class="pg-pin-row" id="pg-pin-dots">
           ${[0,1,2,3].map(i=>`<div class="pg-pin-dot" id="pgd_${i}"></div>`).join("")}
         </div>
@@ -8783,10 +8791,9 @@ document.addEventListener("keydown", e => {
         <div class="pg-numpad">
           ${[1,2,3,4,5,6,7,8,9,"","0","⌫"].map(k=>`<button class="pg-num${k==="⌫"?" del":""}" onclick="pg_numpad('${k}')">${k}</button>`).join("")}
         </div>
-        ${!required?`<button class="pg-btn pg-btn-secondary" style="margin-top:14px;" onclick="pg_skipPin('${profileId}')">Skip — No PIN</button>`:""}
+        ${!required&&!isNewDevice?`<button class="pg-btn pg-btn-secondary" style="margin-top:14px;" onclick="pg_skipPin('${profileId}')">Skip — No PIN</button>`:""}
         <button class="pg-btn pg-btn-secondary" style="margin-top:6px;" onclick="pg_back()">← Back</button>
       </div>`;
-    _pinTarget={mode:required?"verify":"set",profileId};
   }
 
   window.pg_numpad=function(k){
@@ -8836,7 +8843,12 @@ document.addEventListener("keydown", e => {
     if(!profile) return;
     if(profile.hasPin){
       _pinBuffer="";
-      renderSetPin(profileId,true);
+      if(!profile.pinHash){
+        /* PIN required but not set on this device yet — prompt to create one */
+        renderSetPin(profileId, false, true);
+      } else {
+        renderSetPin(profileId, true);
+      }
     } else {
       _enterApp(profileId);
     }
