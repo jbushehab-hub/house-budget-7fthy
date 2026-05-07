@@ -14,7 +14,7 @@ const _m={name:"House Budget Tracker",short_name:"HouseTracker",start_url:"./",d
         {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230F1923'/%3E%3Ctext y='420' x='20' font-size='440'%3E%F0%9F%8F%A1%3C/text%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml"}]};
 const _mb=new Blob([JSON.stringify(_m)],{type:"application/json"});
 const _ml=document.createElement("link");_ml.rel="manifest";_ml.href=URL.createObjectURL(_mb);document.head.appendChild(_ml);
-</script><link rel="manifest" href="blob:null/ddb0ef75-2d1e-4e20-9abf-7bcd1f2251d1"><link rel="manifest" href="blob:https://jbushehab-hub.github.io/ad6ef73e-5757-4be8-814e-975bd9d3ec2b"><link rel="manifest" href="blob:null/fd695ae9-75b7-4b8c-929c-3691a55578b1">
+</script><link rel="manifest" href="blob:null/d98840da-6be7-4fa7-acfc-339eadfe5244"><link rel="manifest" href="blob:https://jbushehab-hub.github.io/ad6ef73e-5757-4be8-814e-975bd9d3ec2b"><link rel="manifest" href="blob:null/fd695ae9-75b7-4b8c-929c-3691a55578b1">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&amp;family=Nunito+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
 <style>
 /* ── CSS Variables: Dark & Light Mode ── */
@@ -6521,25 +6521,13 @@ ReactDOM.createRoot(document.getElementById("screen")).render( /*#__PURE__*/Reac
           <div class="pg-avatar" style="background:#F0A50022;">👨</div>
           <div class="pg-name">Jassim BuShehab</div>
           <div class="pg-arrow">›</div>
-        </div><div class="pg-profile-row" onclick="pg_selectProfile('p1777837020945')">
+        </div><div class="pg-profile-row" onclick="pg_selectProfile('p1777838493083')">
           <div class="pg-avatar" style="background:#F0A50022;">👨</div>
           <div class="pg-name">Jassim</div>
-          <div class="pg-arrow">›</div>
-        </div><div class="pg-profile-row" onclick="pg_selectProfile('p1777842042330')">
-          <div class="pg-avatar" style="background:#F0A50022;">👨</div>
-          <div class="pg-name">Jassim BuShehab</div>
           <div class="pg-arrow">›</div>
         </div><div class="pg-profile-row" onclick="pg_selectProfile('p1778156654861')">
           <div class="pg-avatar" style="background:#F0A50022;">👩</div>
           <div class="pg-name">aua</div>
-          <div class="pg-arrow">›</div>
-        </div><div class="pg-profile-row" onclick="pg_selectProfile('p1777839984882')">
-          <div class="pg-avatar" style="background:#F0A50022;">👤</div>
-          <div class="pg-name">Jassim</div>
-          <div class="pg-arrow">›</div>
-        </div><div class="pg-profile-row" onclick="pg_selectProfile('p1777838493083')">
-          <div class="pg-avatar" style="background:#F0A50022;">👨</div>
-          <div class="pg-name">Jassim</div>
           <div class="pg-arrow">›</div>
         </div></div>
     <div class="pg-card">
@@ -6823,7 +6811,7 @@ ReactDOM.createRoot(document.getElementById("screen")).render( /*#__PURE__*/Reac
           <div style="font-size:16px;font-weight:900;color:#ECF0F1;font-family:Nunito,sans-serif;margin-bottom:6px;">Publishing to GitHub Pages…</div>
           <div style="font-size:12px;color:#7F8C8D;line-height:1.6;" id="sb-loading-msg">Creating repo &amp; uploading your app. Takes ~20 seconds.</div>
           <div style="margin:20px auto 0;width:200px;height:5px;background:#243447;border-radius:99px;overflow:hidden;">
-            <div id="sb-progress-bar" style="height: 100%; width: 24.7467%; background: linear-gradient(90deg, rgb(0, 199, 183), rgb(0, 173, 159)); border-radius: 99px; transition: width 0.4s;"></div>
+            <div id="sb-progress-bar" style="height: 100%; width: 15.1064%; background: linear-gradient(90deg, rgb(0, 199, 183), rgb(0, 173, 159)); border-radius: 99px; transition: width 0.4s;"></div>
           </div>
         </div>
       </div>
@@ -8632,38 +8620,48 @@ document.addEventListener("keydown", e => {
     return h.toString(16);
   }
 
-  /* ── Profile Firebase sync ── */
+  /* ── Profile Firebase sync — Firebase is the ONLY store ── */
   const _PROF_DB="https://house-budget-c64c1-default-rtdb.asia-southeast1.firebasedatabase.app";
   const _PROF_ROOM="Jassim2026";
   const _PROF_URL=_PROF_DB+"/rooms/"+_PROF_ROOM+"/profiles.json";
 
-  function getProfiles(){
-    try{return JSON.parse(localStorage.getItem("hbt_profiles")||"[]");}catch(e){return [];}
-  }
+  /* In-memory cache only — never trust localStorage for profiles */
+  let _profilesCache=[];
 
-  /* Write to both localStorage AND Firebase — Firebase is master */
-  function saveProfiles(list){
-    try{localStorage.setItem("hbt_profiles",JSON.stringify(list));}catch(e){}
-    _pushProfilesToFirebase(list);
+  function getProfiles(){ return _profilesCache; }
+
+  async function saveProfiles(list){
+    _profilesCache=list;
+    try{
+      await fetch(_PROF_URL,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(list)});
+    }catch(e){}
   }
 
   function _pushProfilesToFirebase(list){
+    _profilesCache=list;
     try{
       fetch(_PROF_URL,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(list)}).catch(()=>{});
     }catch(e){}
   }
 
-  /* Pull from Firebase and completely replace local — Firebase wins always */
-  async function _fetchAndMergeProfilesFromCloud(){
+  async function _loadProfilesFromFirebase(){
     try{
       const res=await fetch(_PROF_URL+"?t="+Date.now());
-      if(!res.ok) return;
-      const remote=await res.json();
-      if(!Array.isArray(remote)||remote.length===0) return;
-      /* Firebase is master — replace local entirely */
-      try{localStorage.setItem("hbt_profiles",JSON.stringify(remote));}catch(e){}
-    }catch(e){}
+      if(res.ok){
+        const data=await res.json();
+        if(Array.isArray(data)) _profilesCache=data;
+        else _profilesCache=[];
+      }
+    }catch(e){
+      /* Offline fallback — try localStorage */
+      try{const v=localStorage.getItem("hbt_profiles"); if(v) _profilesCache=JSON.parse(v);}catch(e2){}
+    }
+    /* Keep localStorage in sync as offline backup */
+    try{localStorage.setItem("hbt_profiles",JSON.stringify(_profilesCache));}catch(e){}
   }
+
+  /* Legacy alias */
+  async function _fetchAndMergeProfilesFromCloud(){ await _loadProfilesFromFirebase(); }
   function getProfileData(id){
     const keys=["hbt_cats","hbt_exp","hbt_lang","hbt_budget","hbt_noh","hbt_funds","hbt_sync_cfg","hbt_theme"];
     const data={};
@@ -9096,11 +9094,11 @@ document.addEventListener("keydown", e => {
     window._apsKey=handleKey;
   };
 
-  window.pg_adminDeleteProfile=function(profileId,name){
+  window.pg_adminDeleteProfile=async function(profileId,name){
     if(!confirm("Delete profile \""+name+"\"? All their data will be lost.")) return;
     let profiles=getProfiles();
     profiles=profiles.filter(p=>p.id!==profileId);
-    saveProfiles(profiles);
+    await saveProfiles(profiles);
     /* Also clear stored data for this profile */
     const keys=["hbt_cats","hbt_exp","hbt_lang","hbt_budget","hbt_noh","hbt_funds","hbt_sync_cfg","hbt_theme"];
     keys.forEach(k=>{try{localStorage.removeItem(PFX+profileId+"_"+k);}catch(e){}});
@@ -9211,35 +9209,40 @@ document.addEventListener("keydown", e => {
 
   /* ── Boot ── */
   function _boot(){
-    const autoProfile=localStorage.getItem(SEL_KEY);
-    if(autoProfile){
-      const profiles=getProfiles();
-      const profile=profiles.find(p=>p.id===autoProfile);
-      if(profile){
-        if(profile.hasPin){
-          _pinBuffer="";
-          renderSetPin(autoProfile,true);
+    /* Show loading screen while fetching profiles from Firebase */
+    content.innerHTML=`<div style="text-align:center;padding:60px 20px;">
+      <div style="font-size:36px;margin-bottom:16px;">🏠</div>
+      <div style="font-size:14px;font-weight:700;color:var(--tx);margin-bottom:8px;">Loading profiles…</div>
+      <div style="font-size:12px;color:var(--mu);">Connecting to Firebase</div>
+    </div>`;
+
+    _loadProfilesFromFirebase().then(()=>{
+      const autoProfile=localStorage.getItem(SEL_KEY);
+      if(autoProfile){
+        const profile=getProfiles().find(p=>p.id===autoProfile);
+        if(profile){
+          if(profile.hasPin){
+            _pinBuffer="";
+            renderSetPin(autoProfile,true);
+          } else {
+            loadProfileData(autoProfile);
+            gate.classList.add("hidden");
+            const savedTheme=localStorage.getItem("hbt_theme")||"light";
+            if(savedTheme==="light") document.body.classList.add("light");
+            else document.body.classList.remove("light");
+            const avEl2=document.getElementById("pg-topbar-avatar");
+            const nmEl2=document.getElementById("pg-topbar-name");
+            if(avEl2) avEl2.textContent=profile.avatar;
+            if(nmEl2) nmEl2.textContent=profile.name;
+          }
         } else {
-          loadProfileData(autoProfile);
-          gate.classList.add("hidden");
-          const savedTheme=localStorage.getItem("hbt_theme")||"light";
-          if(savedTheme==="light") document.body.classList.add("light");
-          else document.body.classList.remove("light");
-          const avEl2=document.getElementById("pg-topbar-avatar");
-          const nmEl2=document.getElementById("pg-topbar-name");
-          if(avEl2&&profile) avEl2.textContent=profile.avatar;
-          if(nmEl2&&profile) nmEl2.textContent=profile.name;
+          localStorage.removeItem(SEL_KEY);
+          _renderProfileListUI();
         }
       } else {
-        renderProfileList();
+        _renderProfileListUI();
       }
-    } else {
-      renderProfileList();
-    }
-    /* Pull from Firebase on boot — Firebase is master */
-    _fetchAndMergeProfilesFromCloud().then(()=>{
-      if(!gate.classList.contains("hidden")) _renderProfileListUI();
-    }).catch(()=>{});
+    }).catch(()=>{ _renderProfileListUI(); });
   }
   _boot();
 })();
