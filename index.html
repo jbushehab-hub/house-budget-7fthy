@@ -14,7 +14,7 @@ const _m={name:"House Budget Tracker",short_name:"HouseTracker",start_url:"./",d
         {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230F1923'/%3E%3Ctext y='420' x='20' font-size='440'%3E%F0%9F%8F%A1%3C/text%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml"}]};
 const _mb=new Blob([JSON.stringify(_m)],{type:"application/json"});
 const _ml=document.createElement("link");_ml.rel="manifest";_ml.href=URL.createObjectURL(_mb);document.head.appendChild(_ml);
-</script><link rel="manifest" href="blob:null/710b39e0-80c3-4195-a917-dc87a7766c92"><link rel="manifest" href="blob:https://jbushehab-hub.github.io/ad6ef73e-5757-4be8-814e-975bd9d3ec2b"><link rel="manifest" href="blob:null/fd695ae9-75b7-4b8c-929c-3691a55578b1">
+</script><link rel="manifest" href="blob:null/ddb0ef75-2d1e-4e20-9abf-7bcd1f2251d1"><link rel="manifest" href="blob:https://jbushehab-hub.github.io/ad6ef73e-5757-4be8-814e-975bd9d3ec2b"><link rel="manifest" href="blob:null/fd695ae9-75b7-4b8c-929c-3691a55578b1">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&amp;family=Nunito+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
 <style>
 /* ── CSS Variables: Dark & Light Mode ── */
@@ -6823,7 +6823,7 @@ ReactDOM.createRoot(document.getElementById("screen")).render( /*#__PURE__*/Reac
           <div style="font-size:16px;font-weight:900;color:#ECF0F1;font-family:Nunito,sans-serif;margin-bottom:6px;">Publishing to GitHub Pages…</div>
           <div style="font-size:12px;color:#7F8C8D;line-height:1.6;" id="sb-loading-msg">Creating repo &amp; uploading your app. Takes ~20 seconds.</div>
           <div style="margin:20px auto 0;width:200px;height:5px;background:#243447;border-radius:99px;overflow:hidden;">
-            <div id="sb-progress-bar" style="height: 100%; width: 30.2381%; background: linear-gradient(90deg, rgb(0, 199, 183), rgb(0, 173, 159)); border-radius: 99px; transition: width 0.4s;"></div>
+            <div id="sb-progress-bar" style="height: 100%; width: 24.7467%; background: linear-gradient(90deg, rgb(0, 199, 183), rgb(0, 173, 159)); border-radius: 99px; transition: width 0.4s;"></div>
           </div>
         </div>
       </div>
@@ -8641,58 +8641,27 @@ document.addEventListener("keydown", e => {
     try{return JSON.parse(localStorage.getItem("hbt_profiles")||"[]");}catch(e){return [];}
   }
 
-  /* Always push the full authoritative list to Firebase */
+  /* Write to both localStorage AND Firebase — Firebase is master */
+  function saveProfiles(list){
+    try{localStorage.setItem("hbt_profiles",JSON.stringify(list));}catch(e){}
+    _pushProfilesToFirebase(list);
+  }
+
   function _pushProfilesToFirebase(list){
     try{
-      const data=list.map(p=>({id:p.id,name:p.name,avatar:p.avatar,color:p.color,hasPin:p.hasPin,pinHash:p.pinHash||"",updatedAt:p.updatedAt||Date.now()}));
-      fetch(_PROF_URL,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)}).catch(()=>{});
+      fetch(_PROF_URL,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(list)}).catch(()=>{});
     }catch(e){}
   }
 
-  function saveProfiles(list){
-    const now=Date.now();
-    /* Preserve existing updatedAt, only update entries that changed */
-    const old=getProfiles();
-    const oldMap=new Map(old.map(p=>[p.id,p]));
-    const stamped=list.map(p=>{
-      const prev=oldMap.get(p.id);
-      /* Stamp with now if this profile changed or is new */
-      const changed=!prev||JSON.stringify(prev)!==JSON.stringify({...p,updatedAt:prev.updatedAt});
-      return {...p,updatedAt:changed?now:(prev.updatedAt||now)};
-    });
-    try{localStorage.setItem("hbt_profiles",JSON.stringify(stamped));}catch(e){}
-    _pushProfilesToFirebase(stamped);
-  }
-
+  /* Pull from Firebase and completely replace local — Firebase wins always */
   async function _fetchAndMergeProfilesFromCloud(){
     try{
       const res=await fetch(_PROF_URL+"?t="+Date.now());
       if(!res.ok) return;
       const remote=await res.json();
-      const local=getProfiles();
-
       if(!Array.isArray(remote)||remote.length===0) return;
-
-      /* Merge: winner = newer updatedAt. Profile missing from remote = deleted on another device */
-      const merged=[];
-      const remoteMap=new Map(remote.map(p=>[p.id,p]));
-      const localMap=new Map(local.map(p=>[p.id,p]));
-      const allIds=new Set([...remoteMap.keys(),...localMap.keys()]);
-
-      allIds.forEach(id=>{
-        const rem=remoteMap.get(id);
-        const loc=localMap.get(id);
-        if(rem&&loc){
-          /* Both exist — newer timestamp wins */
-          merged.push((rem.updatedAt||0)>=(loc.updatedAt||0) ? rem : loc);
-        } else if(rem&&!loc){
-          /* Only on Firebase — add locally */
-          merged.push(rem);
-        }
-        /* loc&&!rem = deleted on another device — don't restore it */
-      });
-
-      try{localStorage.setItem("hbt_profiles",JSON.stringify(merged));}catch(e){}
+      /* Firebase is master — replace local entirely */
+      try{localStorage.setItem("hbt_profiles",JSON.stringify(remote));}catch(e){}
     }catch(e){}
   }
   function getProfileData(id){
@@ -9047,11 +9016,40 @@ document.addEventListener("keydown", e => {
       </div>
       <div class="pg-card">
         <div class="pg-section">Admin Settings</div>
-        <button onclick="pg_adminChangePinFlow()" style="width:100%;background:var(--cardH);border:1px solid var(--bo);border-radius:13px;padding:13px;font-size:13px;font-weight:800;color:var(--tx);cursor:pointer;font-family:'Nunito Sans',sans-serif;display:flex;align-items:center;gap:10px;margin-bottom:0;">
+        <button onclick="pg_adminChangePinFlow()" style="width:100%;background:var(--cardH);border:1px solid var(--bo);border-radius:13px;padding:13px;font-size:13px;font-weight:800;color:var(--tx);cursor:pointer;font-family:'Nunito Sans',sans-serif;display:flex;align-items:center;gap:10px;margin-bottom:10px;">
           <span style="font-size:18px;">🔑</span> Change Admin PIN
+        </button>
+        <button onclick="pg_cleanDuplicates()" style="width:100%;background:#E74C3C22;border:1px solid #E74C3C44;border-radius:13px;padding:13px;font-size:13px;font-weight:800;color:#E74C3C;cursor:pointer;font-family:'Nunito Sans',sans-serif;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:18px;">🧹</span> Remove Duplicate Profiles
         </button>
       </div>`;
   }
+
+  window.pg_cleanDuplicates=function(){
+    const profiles=getProfiles();
+    /* Keep only the first occurrence of each name (case-insensitive), prefer ones with PIN set */
+    const seen=new Map();
+    profiles.forEach(p=>{
+      const key=p.name.trim().toLowerCase();
+      if(!seen.has(key)){
+        seen.set(key,p);
+      } else {
+        /* Keep whichever has a PIN set, or the existing one */
+        const existing=seen.get(key);
+        if(!existing.hasPin && p.hasPin) seen.set(key,p);
+      }
+    });
+    const cleaned=Array.from(seen.values());
+    if(cleaned.length===profiles.length){
+      alert("No duplicates found.");
+      return;
+    }
+    const removed=profiles.length-cleaned.length;
+    if(confirm(`Remove ${removed} duplicate profile(s)? This will sync to all devices.`)){
+      saveProfiles(cleaned);
+      _renderAdminPanel();
+    }
+  };
 
   window.pg_adminChangePinFlow=function(){
     _adminPinMode="change_old";
@@ -9238,9 +9236,8 @@ document.addEventListener("keydown", e => {
     } else {
       renderProfileList();
     }
-    /* Only pull from Firebase on boot — never push (avoid overwriting other device's changes) */
+    /* Pull from Firebase on boot — Firebase is master */
     _fetchAndMergeProfilesFromCloud().then(()=>{
-      /* Re-render profile list if still on gate screen */
       if(!gate.classList.contains("hidden")) _renderProfileListUI();
     }).catch(()=>{});
   }
