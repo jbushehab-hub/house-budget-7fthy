@@ -14,7 +14,7 @@ const _m={name:"House Budget Tracker",short_name:"HouseTracker",start_url:"./",d
         {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230F1923'/%3E%3Ctext y='420' x='20' font-size='440'%3E%F0%9F%8F%A1%3C/text%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml"}]};
 const _mb=new Blob([JSON.stringify(_m)],{type:"application/json"});
 const _ml=document.createElement("link");_ml.rel="manifest";_ml.href=URL.createObjectURL(_mb);document.head.appendChild(_ml);
-</script><link rel="manifest" href="blob:null/b1cad0a1-f5fc-4e4a-9583-e094b0c54599"><link rel="manifest" href="blob:https://jbushehab-hub.github.io/ad6ef73e-5757-4be8-814e-975bd9d3ec2b"><link rel="manifest" href="blob:null/fd695ae9-75b7-4b8c-929c-3691a55578b1">
+</script><link rel="manifest" href="blob:null/710b39e0-80c3-4195-a917-dc87a7766c92"><link rel="manifest" href="blob:https://jbushehab-hub.github.io/ad6ef73e-5757-4be8-814e-975bd9d3ec2b"><link rel="manifest" href="blob:null/fd695ae9-75b7-4b8c-929c-3691a55578b1">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&amp;family=Nunito+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
 <style>
 /* ── CSS Variables: Dark & Light Mode ── */
@@ -6517,7 +6517,11 @@ ReactDOM.createRoot(document.getElementById("screen")).render( /*#__PURE__*/Reac
   <div class="pg-logo">🏡</div>
   <div class="pg-title">House Budget</div>
   <div class="pg-sub">Select your profile to continue</div>
-  <div id="pg-content" style="width:100%;max-width:400px;"><div class="pg-card"><div class="pg-section">Select Profile</div><div class="pg-profile-row" onclick="pg_selectProfile('p1777837020945')">
+  <div id="pg-content" style="width:100%;max-width:400px;"><div class="pg-card"><div class="pg-section">Select Profile</div><div class="pg-profile-row" onclick="pg_selectProfile('p1777841566930')">
+          <div class="pg-avatar" style="background:#F0A50022;">👨</div>
+          <div class="pg-name">Jassim BuShehab</div>
+          <div class="pg-arrow">›</div>
+        </div><div class="pg-profile-row" onclick="pg_selectProfile('p1777837020945')">
           <div class="pg-avatar" style="background:#F0A50022;">👨</div>
           <div class="pg-name">Jassim</div>
           <div class="pg-arrow">›</div>
@@ -6528,10 +6532,6 @@ ReactDOM.createRoot(document.getElementById("screen")).render( /*#__PURE__*/Reac
         </div><div class="pg-profile-row" onclick="pg_selectProfile('p1778156654861')">
           <div class="pg-avatar" style="background:#F0A50022;">👩</div>
           <div class="pg-name">aua</div>
-          <div class="pg-arrow">›</div>
-        </div><div class="pg-profile-row" onclick="pg_selectProfile('p1777841566930')">
-          <div class="pg-avatar" style="background:#F0A50022;">👨</div>
-          <div class="pg-name">Jassim BuShehab</div>
           <div class="pg-arrow">›</div>
         </div><div class="pg-profile-row" onclick="pg_selectProfile('p1777839984882')">
           <div class="pg-avatar" style="background:#F0A50022;">👤</div>
@@ -6823,7 +6823,7 @@ ReactDOM.createRoot(document.getElementById("screen")).render( /*#__PURE__*/Reac
           <div style="font-size:16px;font-weight:900;color:#ECF0F1;font-family:Nunito,sans-serif;margin-bottom:6px;">Publishing to GitHub Pages…</div>
           <div style="font-size:12px;color:#7F8C8D;line-height:1.6;" id="sb-loading-msg">Creating repo &amp; uploading your app. Takes ~20 seconds.</div>
           <div style="margin:20px auto 0;width:200px;height:5px;background:#243447;border-radius:99px;overflow:hidden;">
-            <div id="sb-progress-bar" style="height: 100%; width: 22.7085%; background: linear-gradient(90deg, rgb(0, 199, 183), rgb(0, 173, 159)); border-radius: 99px; transition: width 0.4s;"></div>
+            <div id="sb-progress-bar" style="height: 100%; width: 30.2381%; background: linear-gradient(90deg, rgb(0, 199, 183), rgb(0, 173, 159)); border-radius: 99px; transition: width 0.4s;"></div>
           </div>
         </div>
       </div>
@@ -8650,8 +8650,16 @@ document.addEventListener("keydown", e => {
   }
 
   function saveProfiles(list){
-    /* Stamp each profile with update time */
-    const stamped=list.map(p=>({...p,updatedAt:Date.now()}));
+    const now=Date.now();
+    /* Preserve existing updatedAt, only update entries that changed */
+    const old=getProfiles();
+    const oldMap=new Map(old.map(p=>[p.id,p]));
+    const stamped=list.map(p=>{
+      const prev=oldMap.get(p.id);
+      /* Stamp with now if this profile changed or is new */
+      const changed=!prev||JSON.stringify(prev)!==JSON.stringify({...p,updatedAt:prev.updatedAt});
+      return {...p,updatedAt:changed?now:(prev.updatedAt||now)};
+    });
     try{localStorage.setItem("hbt_profiles",JSON.stringify(stamped));}catch(e){}
     _pushProfilesToFirebase(stamped);
   }
@@ -8661,34 +8669,27 @@ document.addEventListener("keydown", e => {
       const res=await fetch(_PROF_URL+"?t="+Date.now());
       if(!res.ok) return;
       const remote=await res.json();
-
       const local=getProfiles();
 
-      if(!Array.isArray(remote)||remote.length===0){
-        /* Firebase empty — push local up */
-        if(local.length>0) _pushProfilesToFirebase(local);
-        return;
-      }
+      if(!Array.isArray(remote)||remote.length===0) return;
 
-      /* Build merged list: for each profile, keep the version with the latest updatedAt */
-      const allIds=new Set([...local.map(p=>p.id),...remote.map(p=>p.id)]);
-      /* Find deleted IDs: in local but NOT in remote, and remote was updated after local cache */
-      const remoteIds=new Set(remote.map(p=>p.id));
-
+      /* Merge: winner = newer updatedAt. Profile missing from remote = deleted on another device */
       const merged=[];
+      const remoteMap=new Map(remote.map(p=>[p.id,p]));
+      const localMap=new Map(local.map(p=>[p.id,p]));
+      const allIds=new Set([...remoteMap.keys(),...localMap.keys()]);
+
       allIds.forEach(id=>{
-        const loc=local.find(p=>p.id===id);
-        const rem=remote.find(p=>p.id===id);
-        if(loc&&rem){
-          /* Both have it — use whichever is newer */
+        const rem=remoteMap.get(id);
+        const loc=localMap.get(id);
+        if(rem&&loc){
+          /* Both exist — newer timestamp wins */
           merged.push((rem.updatedAt||0)>=(loc.updatedAt||0) ? rem : loc);
         } else if(rem&&!loc){
-          /* Only on remote — add to local */
+          /* Only on Firebase — add locally */
           merged.push(rem);
-        } else if(loc&&!rem){
-          /* Only local — means it was deleted on another device; skip it */
-          /* (don't add back deleted profiles) */
         }
+        /* loc&&!rem = deleted on another device — don't restore it */
       });
 
       try{localStorage.setItem("hbt_profiles",JSON.stringify(merged));}catch(e){}
@@ -9237,9 +9238,11 @@ document.addEventListener("keydown", e => {
     } else {
       renderProfileList();
     }
-    /* Push local profiles to Firebase in background so other devices can see them */
-    const localProfs=getProfiles();
-    if(localProfs.length>0) _pushProfilesToFirebase(localProfs);
+    /* Only pull from Firebase on boot — never push (avoid overwriting other device's changes) */
+    _fetchAndMergeProfilesFromCloud().then(()=>{
+      /* Re-render profile list if still on gate screen */
+      if(!gate.classList.contains("hidden")) _renderProfileListUI();
+    }).catch(()=>{});
   }
   _boot();
 })();
