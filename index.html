@@ -14,7 +14,7 @@ const _m={name:"House Budget Tracker",short_name:"HouseTracker",start_url:"./",d
         {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230F1923'/%3E%3Ctext y='420' x='20' font-size='440'%3E%F0%9F%8F%A1%3C/text%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml"}]};
 const _mb=new Blob([JSON.stringify(_m)],{type:"application/json"});
 const _ml=document.createElement("link");_ml.rel="manifest";_ml.href=URL.createObjectURL(_mb);document.head.appendChild(_ml);
-</script><link rel="manifest" href="blob:null/b8893f4e-c953-4d8c-a158-8e824ac00780"><script>
+</script><link rel="manifest" href="blob:null/5f1d2cae-9056-44c3-b708-6da14cdd2f06"><script>
 /* React safety stub — must run before any compiled JSX code */
 if(typeof React==="undefined"){window.React={createElement:function(){return null;},useState:function(v){return [v,function(){}];},useEffect:function(){},useRef:function(v){return {current:v||null};},useCallback:function(f){return f;},memo:function(f){return f;},Component:function(){}};}
 if(typeof ReactDOM==="undefined"){window.ReactDOM={render:function(){},createRoot:function(){return {render:function(){}};}};}
@@ -7230,21 +7230,17 @@ ReactDOM.createRoot(document.getElementById("screen")).render( /*#__PURE__*/Reac
   <div class="pg-logo">🏡</div>
   <div class="pg-title">House Budget</div>
   <div class="pg-sub">Select your profile to continue</div>
-  <div id="pg-content" style="width:100%;max-width:400px;">
-      <div class="pg-card" style="text-align:center;">
-        <div style="font-size:36px;margin-bottom:4px;">👩</div>
-        <div style="font-size:16px;font-weight:800;color:var(--tx);margin-bottom:4px;">ayah</div>
-        <div style="font-size:12px;color:var(--mu);margin-bottom:18px;">Enter PIN to unlock</div>
-        <div class="pg-pin-row" id="pg-pin-dots">
-          <div class="pg-pin-dot" id="pgd_0"></div><div class="pg-pin-dot" id="pgd_1"></div><div class="pg-pin-dot" id="pgd_2"></div><div class="pg-pin-dot" id="pgd_3"></div>
-        </div>
-        <div id="pg-pin-err" class="pg-err" style="display:none;"></div>
-        <div class="pg-numpad">
-          <button class="pg-num" onclick="pg_numpad('1')">1</button><button class="pg-num" onclick="pg_numpad('2')">2</button><button class="pg-num" onclick="pg_numpad('3')">3</button><button class="pg-num" onclick="pg_numpad('4')">4</button><button class="pg-num" onclick="pg_numpad('5')">5</button><button class="pg-num" onclick="pg_numpad('6')">6</button><button class="pg-num" onclick="pg_numpad('7')">7</button><button class="pg-num" onclick="pg_numpad('8')">8</button><button class="pg-num" onclick="pg_numpad('9')">9</button><button class="pg-num" onclick="pg_numpad('')"></button><button class="pg-num" onclick="pg_numpad('0')">0</button><button class="pg-num del" onclick="pg_numpad('⌫')">⌫</button>
-        </div>
-        
-        <button class="pg-btn pg-btn-secondary" style="margin-top:6px;" onclick="pg_back()">← Back</button>
-      </div></div>
+  <div id="pg-content" style="width:100%;max-width:400px;"><div class="pg-card"><div class="pg-section">Select Profile</div><div class="pg-profile-row" onclick="pg_selectProfile('p1777838493083')">
+          <div class="pg-avatar" style="background:#F0A50022;">👨</div>
+          <div class="pg-name">Jassim</div>
+          <div class="pg-arrow">›</div>
+        </div><div class="pg-profile-row" onclick="pg_selectProfile('p_1778227113821')">
+          <div class="pg-avatar" style="background:#F0A50022;">👩</div>
+          <div class="pg-name">ayah</div>
+          <div class="pg-arrow">›</div>
+        </div></div>
+    <button onclick="window._forceRefreshProfiles()" style="width:100%;background:#3498DB22;border:1.5px solid #3498DB44;border-radius:13px;padding:12px;font-size:13px;font-weight:800;color:#3498DB;cursor:pointer;font-family:'Nunito Sans',sans-serif;margin-bottom:12px;">🔄 Refresh Profiles from Cloud</button>
+    <div style="font-size:10px;color:var(--mu);text-align:center;margin-bottom:10px;word-break:break-all;">📡 house-budget-c64c1-default-rtdb.asia-southeast1.firebasedatabase.app · 2 profile(s)</div></div>
   <div style="width:100%;max-width:400px;margin-top:8px;display:flex;gap:8px;">
     <button onclick="openShare()" style="flex:1;background:var(--cardH);border:1px solid var(--bo);border-radius:16px;padding:13px;font-size:13px;font-weight:800;color:var(--mu);cursor:pointer;font-family:'Nunito Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;">
       <span style="font-size:16px;">📤</span> Share App
@@ -7512,7 +7508,7 @@ ReactDOM.createRoot(document.getElementById("screen")).render( /*#__PURE__*/Reac
           <div style="font-size:16px;font-weight:900;color:#ECF0F1;font-family:Nunito,sans-serif;margin-bottom:6px;">Publishing to GitHub Pages…</div>
           <div style="font-size:12px;color:#7F8C8D;line-height:1.6;" id="sb-loading-msg">Creating repo &amp; uploading your app. Takes ~20 seconds.</div>
           <div style="margin:20px auto 0;width:200px;height:5px;background:#243447;border-radius:99px;overflow:hidden;">
-            <div id="sb-progress-bar" style="height: 100%; width: 17.6596%; background: linear-gradient(90deg, rgb(0, 199, 183), rgb(0, 173, 159)); border-radius: 99px; transition: width 0.4s;"></div>
+            <div id="sb-progress-bar" style="height: 100%; width: 25.4711%; background: linear-gradient(90deg, rgb(0, 199, 183), rgb(0, 173, 159)); border-radius: 99px; transition: width 0.4s;"></div>
           </div>
         </div>
       </div>
@@ -9602,14 +9598,18 @@ document.addEventListener("keydown", e => {
 
   async function _loadProfilesFromFirebase(){
     try{
-      const res=await fetch(_getProfUrl()+"?t="+Date.now());
+      /* 5-second timeout so a slow/stalled network never freezes the UI */
+      const controller=new AbortController();
+      const tid=setTimeout(()=>controller.abort(),5000);
+      const res=await fetch(_getProfUrl()+"?t="+Date.now(),{signal:controller.signal});
+      clearTimeout(tid);
       if(res.ok){
         const data=await res.json();
         if(Array.isArray(data)) _profilesCache=data;
         else _profilesCache=[];
       }
     }catch(e){
-      /* Offline fallback — try localStorage */
+      /* Offline / timeout fallback — use localStorage cache */
       try{const v=localStorage.getItem("hbt_profiles"); if(v) _profilesCache=JSON.parse(v);}catch(e2){}
     }
     /* Keep localStorage in sync as offline backup */
@@ -9657,7 +9657,11 @@ document.addEventListener("keydown", e => {
       <div style="font-size:28px;margin-bottom:10px;">🔄</div>
       <div style="font-size:13px;color:var(--mu);">Syncing profiles…</div>
     </div>`;
-    _loadProfilesFromFirebase().then(()=>_renderProfileListUI()).catch(()=>_renderProfileListUI());
+    /* Safety net: if fetch takes more than 6s, render whatever we have */
+    const fallbackTimer=setTimeout(()=>_renderProfileListUI(),6000);
+    _loadProfilesFromFirebase()
+      .then(()=>{clearTimeout(fallbackTimer);_renderProfileListUI();})
+      .catch(()=>{clearTimeout(fallbackTimer);_renderProfileListUI();});
   }
   window.renderProfileList=renderProfileList;
 
@@ -10293,7 +10297,11 @@ document.addEventListener("keydown", e => {
       <div style="font-size:12px;color:var(--mu);">Fetching from: ${_getProfUrl().replace("https://","").split("/")[0]}</div>
     </div>`;
 
+    /* Safety net: if fetch never resolves (iOS background tab, slow network), show profile list after 6s */
+    const bootFallback=setTimeout(()=>_renderProfileListUI(),6000);
+
     _loadProfilesFromFirebase().then(()=>{
+      clearTimeout(bootFallback);
       const autoProfile=localStorage.getItem(SEL_KEY);
       if(autoProfile){
         const profile=getProfiles().find(p=>p.id===autoProfile);
@@ -10319,7 +10327,7 @@ document.addEventListener("keydown", e => {
       } else {
         _renderProfileListUI();
       }
-    }).catch(()=>{ _renderProfileListUI(); });
+    }).catch(()=>{ clearTimeout(bootFallback); _renderProfileListUI(); });
   }
   _boot();
 })();
